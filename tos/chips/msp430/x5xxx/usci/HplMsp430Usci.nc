@@ -261,6 +261,32 @@ interface HplMsp430Usci {
    */
   async command uint8_t getIv();
 
+
+  async command uint8_t getCtl1();
+  async command void setCtl1(uint8_t v);
+
+  /* set direction of the i2c bus */
+  async command void setTransmitMode();
+  async command void setReceiveMode();
+
+  /* get stop bit in i2c mode */
+  async command bool getStopBit();
+  async command bool getStartBit();
+  async command bool getNackBit();
+  async command bool getTransmitReceiveMode();
+
+  /* transmit a NACK, Stop condition, or Start condition, automatically cleared */
+  async command void setTXNACK();
+  async command void setTXStop();
+  async command void setTXStart();
+
+  async command bool isTxIntrPending();
+  async command bool isRxIntrPending();
+  async command bool isNackIntrPending();
+  async command void clrTxIntr();
+  async command void clrRxIntr();
+  async command void clrNackIntr();
+
   /* ----------------------------------------
    * Higher-level operations consistent across all modes.
    */

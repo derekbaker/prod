@@ -57,10 +57,12 @@ module PlatformLedP {
     interface Leds;
   }
 
+
   provides {
     interface Led[uint8_t led_id];
     interface MultiLed;
   }
+
 
 } implementation {
 
@@ -183,7 +185,6 @@ module PlatformLedP {
   async command void Led.off[uint8_t led_id] () { call MultiLed.off(led_id); }
   async command void Led.set[uint8_t led_id] (bool on) { call MultiLed.setSingle(led_id, on); }
   async command void Led.toggle[uint8_t led_id] () { call MultiLed.toggle(led_id); }
-
 
 }
 

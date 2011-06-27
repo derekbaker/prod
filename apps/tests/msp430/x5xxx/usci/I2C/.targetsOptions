@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<buildTargets>
+<default version="4">
+<default>true</default>
+<project/>
+<target>red</target>
+<make-extras/>
+<includes>
+<include global="false" include="source" ncc="false" recursive="true">/opt/tinyos-2.x/tos/chips/msp430</include>
+<include global="false" include="source" ncc="false" recursive="true">/opt/msp430-gcc-4.4.5/msp430/include</include>
+<include global="false" include="source" ncc="false" recursive="true">/opt/tinyos-2.x/tos/platforms/red</include>
+<include global="false" include="source" ncc="false" recursive="true">/opt/tinyos-2.x/tos/lib</include>
+</includes>
+<excludes>
+<exclude>.*\.svn.*</exclude>
+</excludes>
+<typedefs/>
+<macros/>
+<boards/>
+<no-std-incl>false</no-std-incl>
+<component/>
+<component-file>/I2C/src/I2CAppC.nc</component-file>
+<include-last-build>true</include-last-build>
+<include-env-default-paths>true</include-env-default-paths>
+<environment_variables/>
+</default>
+<client-data/>
+</buildTargets>

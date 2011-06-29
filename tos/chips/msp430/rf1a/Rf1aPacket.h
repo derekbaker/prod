@@ -60,6 +60,26 @@ enum {
   LOWPAN_NALP_TINYOS = 0x3f
 };
 
+typedef nx_struct ieee154_simple_header_t {
+  nxle_uint16_t fcf;
+  nxle_uint8_t  dsn;
+  nxle_uint16_t destpan;
+  nxle_uint16_t dest;
+  nxle_uint16_t src;
+} ieee154_simple_header_t;
+
+typedef nx_struct ieee154_fcf_t {
+  nxle_uint16_t frame_type: 3;
+  nxle_uint16_t security_enabled: 1;
+  nxle_uint16_t frame_pending: 1;
+  nxle_uint16_t ack_request: 1;
+  nxle_uint16_t pan_id_compression: 1;
+  nxle_uint16_t _reserved: 3;
+  nxle_uint16_t dest_addr_mode: 2;
+  nxle_uint16_t frame_version: 2;
+  nxle_uint16_t src_addr_mode: 2;
+} ieee154_fcf_t;
+
 /** Base header is the stock IEEE 802.15.4 MAC header (MHR) */
 typedef ieee154_simple_header_t rf1a_ieee154_t;
 

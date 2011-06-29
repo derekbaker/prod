@@ -1,9 +1,7 @@
 /*
- * Copyright (c) 2011 João Gonçalves
- * Copyright (c) 2009-2010 People Power Co.
+ * Copyright (c) 2005 The Regents of the University  of California.
+ * Copyright (c) 2002-2005 Intel Corporation
  * All rights reserved.
- *
- * This open source code was developed with funding from People Power Company
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,42 +33,30 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "msp430usci.h"
-
 /**
- * Generic configuration for a client that shares USCI_B0 in SPI mode.
+ * Defining the platform-independently named packet structures to be the
+ * chip-specific CC1000 packet structures.
  *
- * Connected the SPI pins to HplMsp430GeneralIOC
- * @author João Gonçalves <joao.m.goncalves@ist.utl.pt>
+ * @author Philip Levis
  */
 
+#ifndef PLATFORM_MESSAGE_H
+#define PLATFORM_MESSAGE_H
 
-generic configuration Msp430UsciSpiB0C() {
-  provides {
-    interface Resource;
-    interface SpiPacket;
-    interface SpiByte;
-    interface Msp430UsciError;
-  }
+#include <CC2420.h>
+#include <Serial.h>
 
-} implementation {
-  enum {
-    CLIENT_ID = unique(MSP430_USCI_B0_RESOURCE),
-  };
+typedef union message_header {
+  cc2420_header_t cc2420;
+  serial_header_t serial;
+} message_header_t;
 
-  components Msp430UsciB0P as UsciC;
-  Resource = UsciC.Resource[CLIENT_ID];
+typedef union TOSRadioFooter {
+  cc2420_footer_t cc2420;
+} message_footer_t;
 
-  components Msp430UsciSpiB0P as SpiC;
-  SpiPacket = SpiC.SpiPacket[CLIENT_ID];
-  SpiByte = SpiC.SpiByte;
-  Msp430UsciError = SpiC.Msp430UsciError;
+typedef union TOSRadioMetadata {
+  cc2420_metadata_t cc2420;
+} message_metadata_t;
 
-  UsciC.ResourceConfigure[CLIENT_ID] -> SpiC.ResourceConfigure[CLIENT_ID];
-
-   components HplMsp430GeneralIOC as GIO;
-
-   SpiC.SIMO -> GIO.UCB0SIMO;
-   SpiC.SOMI -> GIO.UCB0SOMI;
-   SpiC.CLK -> GIO.UCB0CLK;
-}
+#endif

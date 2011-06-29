@@ -1,9 +1,6 @@
 /*
- * Copyright (c) 2011 João Gonçalves
  * Copyright (c) 2009-2010 People Power Co.
  * All rights reserved.
- *
- * This open source code was developed with funding from People Power Company
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,44 +30,55 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-#include "msp430usci.h"
-
-/**
- * Generic configuration for a client that shares USCI_B0 in SPI mode.
  *
- * Connected the SPI pins to HplMsp430GeneralIOC
- * @author João Gonçalves <joao.m.goncalves@ist.utl.pt>
+ * @author Peter Bigot
  */
 
+#ifndef _H_hardware_h
+#define _H_hardware_h
 
-generic configuration Msp430UsciSpiB0C() {
-  provides {
-    interface Resource;
-    interface SpiPacket;
-    interface SpiByte;
-    interface Msp430UsciError;
-  }
+#include "msp430hardware.h"
 
-} implementation {
-  enum {
-    CLIENT_ID = unique(MSP430_USCI_B0_RESOURCE),
-  };
+// enum so components can override power saving,
+// as per TEP 112.
+enum {
+  TOS_SLEEP_NONE = MSP430_POWER_ACTIVE,
+};
 
-  components Msp430UsciB0P as UsciC;
-  Resource = UsciC.Resource[CLIENT_ID];
+#define __msp430x543x
+//Unlock for Special funcionality of PINS such as SPI
 
-  components Msp430UsciSpiB0P as SpiC;
-  SpiPacket = SpiC.SpiPacket[CLIENT_ID];
-  SpiByte = SpiC.SpiByte;
-  Msp430UsciError = SpiC.Msp430UsciError;
+/* Use the PlatformAdcC component, and enable 8 pins */
+//#define ADC12_USE_PLATFORM_ADC 1
+//#define ADC12_PIN_AUTO_CONFIGURE 1
+//#define ADC12_PINS_AVAILABLE 8
 
-  UsciC.ResourceConfigure[CLIENT_ID] -> SpiC.ResourceConfigure[CLIENT_ID];
+/* @TODO@ Disable probe for XT1 support until the anomaly observed in
+ * apps/bootstrap/LocalTime is resolved. */
+#ifndef PLATFORM_MSP430_HAS_XT1
+#define PLATFORM_MSP430_HAS_XT1 1
+#endif /* PLATFORM_MSP430_HAS_XT1 */
 
-   components HplMsp430GeneralIOC as GIO;
+// LEDs
+TOSH_ASSIGN_PIN(RED_LED, 4, 7);
+TOSH_ASSIGN_PIN(GREEN_LED, 4, 5);
+TOSH_ASSIGN_PIN(YELLOW_LED, 4, 6);
 
-   SpiC.SIMO -> GIO.UCB0SIMO;
-   SpiC.SOMI -> GIO.UCB0SOMI;
-   SpiC.CLK -> GIO.UCB0CLK;
-}
+// CC2420 RADIO #defines
+TOSH_ASSIGN_PIN(RADIO_CSN, 3, 0);
+TOSH_ASSIGN_PIN(RADIO_VREF, 2, 6);
+TOSH_ASSIGN_PIN(RADIO_RESET, 2, 5);
+TOSH_ASSIGN_PIN(RADIO_FIFOP, 2, 3);
+TOSH_ASSIGN_PIN(RADIO_SFD, 2, 1);
+TOSH_ASSIGN_PIN(RADIO_GIO0, 5, 0);
+TOSH_ASSIGN_PIN(RADIO_FIFO, 2, 2);
+TOSH_ASSIGN_PIN(RADIO_GIO1, 5, 1);
+TOSH_ASSIGN_PIN(RADIO_CCA, 2, 4);
+
+TOSH_ASSIGN_PIN(CC_FIFOP, 2, 3);
+TOSH_ASSIGN_PIN(CC_FIFO, 2, 2);
+TOSH_ASSIGN_PIN(CC_SFD, 2, 1);
+TOSH_ASSIGN_PIN(CC_VREN, 2, 6);
+TOSH_ASSIGN_PIN(CC_RSTN, 2, 5);
+
+#endif // _H_hardware_h

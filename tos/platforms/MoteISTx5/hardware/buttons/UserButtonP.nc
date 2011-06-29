@@ -1,9 +1,6 @@
 /*
- * Copyright (c) 2011 João Gonçalves
- * Copyright (c) 2009-2010 People Power Co.
+ * Copyright (c) 2007 Arch Rock Corporation
  * All rights reserved.
- *
- * This open source code was developed with funding from People Power Company
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,42 +32,47 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "msp430usci.h"
-
 /**
- * Generic configuration for a client that shares USCI_B0 in SPI mode.
+ * Implementation of the user button for the telosb platform
  *
- * Connected the SPI pins to HplMsp430GeneralIOC
- * @author João Gonçalves <joao.m.goncalves@ist.utl.pt>
+ * @author Gilman Tolle <gtolle@archrock.com>
  */
 
+#include <UserButton.h>
 
-generic configuration Msp430UsciSpiB0C() {
-  provides {
-    interface Resource;
-    interface SpiPacket;
-    interface SpiByte;
-    interface Msp430UsciError;
+module UserButtonP {
+  provides interface Get<button_state_t>;
+  provides interface Notify<button_state_t>;
+
+  uses interface Get<bool> as GetLower;
+  uses interface Notify<bool> as NotifyLower;
+}
+implementation {
+
+  command button_state_t Get.get() {
+    if ( call GetLower.get() ) {
+      return BUTTON_PRESSED;
+    } else {
+      return BUTTON_RELEASED;
+    }
   }
 
-} implementation {
-  enum {
-    CLIENT_ID = unique(MSP430_USCI_B0_RESOURCE),
-  };
+  command error_t Notify.enable() {
+    return call NotifyLower.enable();
+  }
 
-  components Msp430UsciB0P as UsciC;
-  Resource = UsciC.Resource[CLIENT_ID];
+  command error_t Notify.disable() {
+    return call NotifyLower.disable();
+  }
 
-  components Msp430UsciSpiB0P as SpiC;
-  SpiPacket = SpiC.SpiPacket[CLIENT_ID];
-  SpiByte = SpiC.SpiByte;
-  Msp430UsciError = SpiC.Msp430UsciError;
+  event void NotifyLower.notify( bool val ) {
+    // telosb user button pin is high when released - invert state
+    if ( val ) {
+      signal Notify.notify( BUTTON_RELEASED );
+    } else {
+      signal Notify.notify( BUTTON_PRESSED );
+    }
+  }
 
-  UsciC.ResourceConfigure[CLIENT_ID] -> SpiC.ResourceConfigure[CLIENT_ID];
-
-   components HplMsp430GeneralIOC as GIO;
-
-   SpiC.SIMO -> GIO.UCB0SIMO;
-   SpiC.SOMI -> GIO.UCB0SOMI;
-   SpiC.CLK -> GIO.UCB0CLK;
+  default event void Notify.notify( button_state_t val ) { }
 }

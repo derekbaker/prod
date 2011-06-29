@@ -1,9 +1,6 @@
 /*
- * Copyright (c) 2011 João Gonçalves
  * Copyright (c) 2009-2010 People Power Co.
  * All rights reserved.
- *
- * This open source code was developed with funding from People Power Company
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,42 +32,42 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "msp430usci.h"
+module PlatformP {
+  provides interface Init;
+  uses {
+    interface Init as PlatformPins;
+    interface Init as PlatformLeds;
+    interface Init as Msp430Pmm;
+    interface Init as PlatformClock;
+    interface Init as MoteInit;
+    interface Init as PeripheralInit;
+  }
+}
 
-/**
- * Generic configuration for a client that shares USCI_B0 in SPI mode.
- *
- * Connected the SPI pins to HplMsp430GeneralIOC
- * @author João Gonçalves <joao.m.goncalves@ist.utl.pt>
- */
+implementation {
 
-
-generic configuration Msp430UsciSpiB0C() {
-  provides {
-    interface Resource;
-    interface SpiPacket;
-    interface SpiByte;
-    interface Msp430UsciError;
+  void uwait(uint16_t u) {
+    uint16_t t0 = TA0R;
+    while((TA0R - t0) <= u);
   }
 
-} implementation {
-  enum {
-    CLIENT_ID = unique(MSP430_USCI_B0_RESOURCE),
-  };
+  command error_t Init.init() {
+    WDTCTL = WDTPW + WDTHOLD;    // Stop watchdog timer
 
-  components Msp430UsciB0P as UsciC;
-  Resource = UsciC.Resource[CLIENT_ID];
+    call PlatformPins.init();   // Initializes the GIO pins
+    call PlatformLeds.init();   // Initializes the Leds
+    call PlatformClock.init();  // Initializes UCS
+    call PeripheralInit.init();
 
-  components Msp430UsciSpiB0P as SpiC;
-  SpiPacket = SpiC.SpiPacket[CLIENT_ID];
-  SpiByte = SpiC.SpiByte;
-  Msp430UsciError = SpiC.Msp430UsciError;
+    // Wait an arbitrary 10 milliseconds for the FLL to calibrate the DCO
+    // before letting the system continue on into a low power mode.
+    uwait(1024*10);
 
-  UsciC.ResourceConfigure[CLIENT_ID] -> SpiC.ResourceConfigure[CLIENT_ID];
+    return SUCCESS;
+  }
 
-   components HplMsp430GeneralIOC as GIO;
-
-   SpiC.SIMO -> GIO.UCB0SIMO;
-   SpiC.SOMI -> GIO.UCB0SOMI;
-   SpiC.CLK -> GIO.UCB0CLK;
+  /***************** Defaults ***************/
+  default command error_t PeripheralInit.init() {
+    return SUCCESS;
+  }
 }

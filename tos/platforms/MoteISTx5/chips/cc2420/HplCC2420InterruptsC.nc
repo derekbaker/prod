@@ -1,9 +1,7 @@
 /*
  * Copyright (c) 2011 João Gonçalves
- * Copyright (c) 2009-2010 People Power Co.
+ * Copyright (c) 2005-2006 Arch Rock Corporation
  * All rights reserved.
- *
- * This open source code was developed with funding from People Power Company
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,42 +33,45 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "msp430usci.h"
-
 /**
- * Generic configuration for a client that shares USCI_B0 in SPI mode.
+ * HPL implementation of interrupts and captures for the ChipCon
+ * CC2420 radio connected to a TI MSP430 processor.
  *
- * Connected the SPI pins to HplMsp430GeneralIOC
- * @author João Gonçalves <joao.m.goncalves@ist.utl.pt>
+ * @author Jonathan Hui <jhui@archrock.com>
  */
 
+/**
+ * Adapted for MSP430f5438 TestBoard - Moteist++s5 prototype
+ *
+ * @author João Gonçalves <joao.m.goncalves@ist.utl.pt>
+ *
+ * Thesis: PowerEmb; http://gems.leme.org.pt/PmWiki/index.php/Projects/PowerEmb
+ * www.ist.utl.pt
+ * $Date: 2011/05/26 17:10:00 $
+ */
 
-generic configuration Msp430UsciSpiB0C() {
-  provides {
-    interface Resource;
-    interface SpiPacket;
-    interface SpiByte;
-    interface Msp430UsciError;
-  }
+configuration HplCC2420InterruptsC {
+  provides interface GpioCapture as CaptureSFD;
+  provides interface GpioInterrupt as InterruptCCA;
+  provides interface GpioInterrupt as InterruptFIFOP;
+}
 
-} implementation {
-  enum {
-    CLIENT_ID = unique(MSP430_USCI_B0_RESOURCE),
-  };
+implementation {
 
-  components Msp430UsciB0P as UsciC;
-  Resource = UsciC.Resource[CLIENT_ID];
+  components HplMsp430GeneralIOC as GeneralIOC;
+  components Msp430TimerC;
+  components new GpioCaptureC() as CaptureSFDC;
+  CaptureSFDC.Msp430TimerControl -> Msp430TimerC.Control1_A0;
+  CaptureSFDC.Msp430Capture -> Msp430TimerC.Capture1_A0;
+  CaptureSFDC.GeneralIO -> GeneralIOC.Port21;
 
-  components Msp430UsciSpiB0P as SpiC;
-  SpiPacket = SpiC.SpiPacket[CLIENT_ID];
-  SpiByte = SpiC.SpiByte;
-  Msp430UsciError = SpiC.Msp430UsciError;
+  components HplMsp430InterruptC;
+  components new Msp430InterruptC() as InterruptCCAC;
+  components new Msp430InterruptC() as InterruptFIFOPC;
+  InterruptCCAC.HplInterrupt -> HplMsp430InterruptC.Port24;
+  InterruptFIFOPC.HplInterrupt -> HplMsp430InterruptC.Port23;
 
-  UsciC.ResourceConfigure[CLIENT_ID] -> SpiC.ResourceConfigure[CLIENT_ID];
-
-   components HplMsp430GeneralIOC as GIO;
-
-   SpiC.SIMO -> GIO.UCB0SIMO;
-   SpiC.SOMI -> GIO.UCB0SOMI;
-   SpiC.CLK -> GIO.UCB0CLK;
+  CaptureSFD = CaptureSFDC.Capture;
+  InterruptCCA = InterruptCCAC.Interrupt;
+  InterruptFIFOP = InterruptFIFOPC.Interrupt;
 }

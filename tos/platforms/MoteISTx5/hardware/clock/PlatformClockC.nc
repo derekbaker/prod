@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2011 João Gonçalves
- * Copyright (c) 2009-2010 People Power Co.
+ * Copyright (c) 2010 People Power Co.
  * All rights reserved.
  *
  * This open source code was developed with funding from People Power Company
@@ -35,42 +34,18 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "msp430usci.h"
-
 /**
- * Generic configuration for a client that shares USCI_B0 in SPI mode.
+ * Top-level initialization of anything to do with the clock
+ * subsystem.
  *
- * Connected the SPI pins to HplMsp430GeneralIOC
- * @author João Gonçalves <joao.m.goncalves@ist.utl.pt>
+ * @author Peter A. Bigot <pab@peoplepowerco.com>
  */
 
-
-generic configuration Msp430UsciSpiB0C() {
-  provides {
-    interface Resource;
-    interface SpiPacket;
-    interface SpiByte;
-    interface Msp430UsciError;
-  }
-
+configuration PlatformClockC {
+  provides interface Init;
 } implementation {
-  enum {
-    CLIENT_ID = unique(MSP430_USCI_B0_RESOURCE),
-  };
-
-  components Msp430UsciB0P as UsciC;
-  Resource = UsciC.Resource[CLIENT_ID];
-
-  components Msp430UsciSpiB0P as SpiC;
-  SpiPacket = SpiC.SpiPacket[CLIENT_ID];
-  SpiByte = SpiC.SpiByte;
-  Msp430UsciError = SpiC.Msp430UsciError;
-
-  UsciC.ResourceConfigure[CLIENT_ID] -> SpiC.ResourceConfigure[CLIENT_ID];
-
-   components HplMsp430GeneralIOC as GIO;
-
-   SpiC.SIMO -> GIO.UCB0SIMO;
-   SpiC.SOMI -> GIO.UCB0SOMI;
-   SpiC.CLK -> GIO.UCB0CLK;
+  components Msp430XV2ClockC;
+  components PlatformClockP;
+  PlatformClockP.SubInit -> Msp430XV2ClockC;
+  Init = PlatformClockP;
 }

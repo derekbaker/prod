@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2011 João Gonçalves
- * Copyright (c) 2009-2010 People Power Co.
+ * Copyright (c) 2010 People Power Co.
  * All rights reserved.
  *
  * This open source code was developed with funding from People Power Company
@@ -35,42 +34,42 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "msp430usci.h"
-
-/**
- * Generic configuration for a client that shares USCI_B0 in SPI mode.
- *
- * Connected the SPI pins to HplMsp430GeneralIOC
- * @author João Gonçalves <joao.m.goncalves@ist.utl.pt>
- */
-
-
-generic configuration Msp430UsciSpiB0C() {
+configuration PlatformAdcC {
   provides {
-    interface Resource;
-    interface SpiPacket;
-    interface SpiByte;
-    interface Msp430UsciError;
+    interface HplMsp430GeneralIO as A0;
+    interface HplMsp430GeneralIO as A1;
+    interface HplMsp430GeneralIO as A2;
+    interface HplMsp430GeneralIO as A3;
+    interface HplMsp430GeneralIO as A4;
+    interface HplMsp430GeneralIO as A5;
+    interface HplMsp430GeneralIO as A6;
+    interface HplMsp430GeneralIO as A7;
+
+    interface Msp430Timer as TimerA;
+    interface Msp430TimerControl as ControlA0;
+    interface Msp430TimerControl as ControlA1;
+    interface Msp430Compare as CompareA0;
+    interface Msp430Compare as CompareA1;
   }
+}
 
-} implementation {
-  enum {
-    CLIENT_ID = unique(MSP430_USCI_B0_RESOURCE),
-  };
+implementation {
 
-  components Msp430UsciB0P as UsciC;
-  Resource = UsciC.Resource[CLIENT_ID];
+  components HplMsp430GeneralIOC;
+  A0 = HplMsp430GeneralIOC.Port20;
+  A1 = HplMsp430GeneralIOC.Port21;
+  A2 = HplMsp430GeneralIOC.Port22;
+  A3 = HplMsp430GeneralIOC.Port23;
+  A4 = HplMsp430GeneralIOC.Port24;
+  A5 = HplMsp430GeneralIOC.Port25;
+  A6 = HplMsp430GeneralIOC.Port26;
+  A7 = HplMsp430GeneralIOC.Port27;
 
-  components Msp430UsciSpiB0P as SpiC;
-  SpiPacket = SpiC.SpiPacket[CLIENT_ID];
-  SpiByte = SpiC.SpiByte;
-  Msp430UsciError = SpiC.Msp430UsciError;
+  components Msp430TimerC;
+  TimerA = Msp430TimerC.Timer0_A;
+  ControlA0 = Msp430TimerC.Control0_A0;
+  ControlA1 = Msp430TimerC.Control0_A1;
+  CompareA0 = Msp430TimerC.Compare0_A0;
+  CompareA1 = Msp430TimerC.Compare0_A1;
 
-  UsciC.ResourceConfigure[CLIENT_ID] -> SpiC.ResourceConfigure[CLIENT_ID];
-
-   components HplMsp430GeneralIOC as GIO;
-
-   SpiC.SIMO -> GIO.UCB0SIMO;
-   SpiC.SOMI -> GIO.UCB0SOMI;
-   SpiC.CLK -> GIO.UCB0CLK;
 }

@@ -1,9 +1,6 @@
 /*
- * Copyright (c) 2011 João Gonçalves
- * Copyright (c) 2009-2010 People Power Co.
+ * Copyright (c) 2007 Arch Rock Corporation
  * All rights reserved.
- *
- * This open source code was developed with funding from People Power Company
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,42 +32,34 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "msp430usci.h"
-
 /**
- * Generic configuration for a client that shares USCI_B0 in SPI mode.
+ * Implementation of the user button for the telosb platform. Get
+ * returns the current state of the button by reading the pin,
+ * regardless of whether enable() or disable() has been called on the
+ * Interface. Notify.enable() and Notify.disable() modify the
+ * underlying interrupt state of the pin, and have the effect of
+ * enabling or disabling notifications that the button has changed
+ * state.
  *
- * Connected the SPI pins to HplMsp430GeneralIOC
- * @author João Gonçalves <joao.m.goncalves@ist.utl.pt>
+ * @author Gilman Tolle <gtolle@archrock.com>
  */
 
+#include <UserButton.h>
 
-generic configuration Msp430UsciSpiB0C() {
-  provides {
-    interface Resource;
-    interface SpiPacket;
-    interface SpiByte;
-    interface Msp430UsciError;
-  }
+configuration UserButtonC {
+  provides interface Get<button_state_t>;
+  provides interface Notify<button_state_t>;
+}
+implementation {
+  components HplUserButtonC;
+  components new SwitchToggleC();
+  SwitchToggleC.GpioInterrupt -> HplUserButtonC.GpioInterrupt;
+  SwitchToggleC.HplMsp430GeneralIO -> HplUserButtonC.HplMsp430GeneralIO;
 
-} implementation {
-  enum {
-    CLIENT_ID = unique(MSP430_USCI_B0_RESOURCE),
-  };
+  components UserButtonP;
+  Get = UserButtonP;
+  Notify = UserButtonP;
 
-  components Msp430UsciB0P as UsciC;
-  Resource = UsciC.Resource[CLIENT_ID];
-
-  components Msp430UsciSpiB0P as SpiC;
-  SpiPacket = SpiC.SpiPacket[CLIENT_ID];
-  SpiByte = SpiC.SpiByte;
-  Msp430UsciError = SpiC.Msp430UsciError;
-
-  UsciC.ResourceConfigure[CLIENT_ID] -> SpiC.ResourceConfigure[CLIENT_ID];
-
-   components HplMsp430GeneralIOC as GIO;
-
-   SpiC.SIMO -> GIO.UCB0SIMO;
-   SpiC.SOMI -> GIO.UCB0SOMI;
-   SpiC.CLK -> GIO.UCB0CLK;
+  UserButtonP.GetLower -> SwitchToggleC.Get;
+  UserButtonP.NotifyLower -> SwitchToggleC.Notify;
 }

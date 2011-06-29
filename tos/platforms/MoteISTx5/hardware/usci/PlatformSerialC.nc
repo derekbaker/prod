@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2011 João Gonçalves
- * Copyright (c) 2009-2010 People Power Co.
+ * Copyright (c) 2009-2010 People Power Company
  * All rights reserved.
  *
  * This open source code was developed with funding from People Power Company
@@ -35,42 +34,41 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "msp430usci.h"
 
 /**
- * Generic configuration for a client that shares USCI_B0 in SPI mode.
+ * De-facto standard component for platform independent access to a serial port.
  *
- * Connected the SPI pins to HplMsp430GeneralIOC
- * @author João Gonçalves <joao.m.goncalves@ist.utl.pt>
+ * This implementation supports the TI EM430 and other MSP430XV2-based boards.
+ *
+ * Note that, since the standard practice is to use StdControl to
+ * start and stop this module (which requests and releases the
+ * corresponding USCI UART module), inclusion of this into an
+ * application is incompatible with sharing the UART among multiple
+ * clients in the TEP108 sense of resource sharing.
+ *
+ * @author David Moss
+ * @author Peter A. Bigot <pab@peoplepowerco.com>
  */
 
-
-generic configuration Msp430UsciSpiB0C() {
+configuration PlatformSerialC {
   provides {
-    interface Resource;
-    interface SpiPacket;
-    interface SpiByte;
+    interface StdControl;
+    interface UartStream;
+    interface UartByte;
     interface Msp430UsciError;
   }
+}
 
-} implementation {
-  enum {
-    CLIENT_ID = unique(MSP430_USCI_B0_RESOURCE),
-  };
+implementation {
 
-  components Msp430UsciB0P as UsciC;
-  Resource = UsciC.Resource[CLIENT_ID];
+  components PlatformSerialP;
+  StdControl = PlatformSerialP;
 
-  components Msp430UsciSpiB0P as SpiC;
-  SpiPacket = SpiC.SpiPacket[CLIENT_ID];
-  SpiByte = SpiC.SpiByte;
-  Msp430UsciError = SpiC.Msp430UsciError;
+  components new Msp430UsciUartA0C() as UartC;
 
-  UsciC.ResourceConfigure[CLIENT_ID] -> SpiC.ResourceConfigure[CLIENT_ID];
+  UartStream = UartC;
+  UartByte = UartC;
+  Msp430UsciError = UartC;
+  PlatformSerialP.Resource -> UartC.Resource;
 
-   components HplMsp430GeneralIOC as GIO;
-
-   SpiC.SIMO -> GIO.UCB0SIMO;
-   SpiC.SOMI -> GIO.UCB0SOMI;
-   SpiC.CLK -> GIO.UCB0CLK;
 }

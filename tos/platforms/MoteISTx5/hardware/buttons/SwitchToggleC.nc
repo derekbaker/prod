@@ -1,9 +1,6 @@
 /*
- * Copyright (c) 2011 João Gonçalves
- * Copyright (c) 2009-2010 People Power Co.
+ * Copyright (c) 2007 Arch Rock Corporation
  * All rights reserved.
- *
- * This open source code was developed with funding from People Power Company
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,42 +32,63 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "msp430usci.h"
-
 /**
- * Generic configuration for a client that shares USCI_B0 in SPI mode.
+ * Not quite generic layer to translate a GIO into a toggle switch
+ * (Newer MSP430 chips require configuring pull-up resistor)
  *
- * Connected the SPI pins to HplMsp430GeneralIOC
- * @author João Gonçalves <joao.m.goncalves@ist.utl.pt>
+ * @author Gilman Tolle <gtolle@archrock.com>
+ * @author Peter A. Bigot <pab@peoplepowerco.com>
  */
 
+#include <UserButton.h>
 
-generic configuration Msp430UsciSpiB0C() {
-  provides {
-    interface Resource;
-    interface SpiPacket;
-    interface SpiByte;
-    interface Msp430UsciError;
+generic module SwitchToggleC() {
+  provides interface Get<bool>;
+  provides interface Notify<bool>;
+
+  uses interface HplMsp430GeneralIO;
+  uses interface GpioInterrupt;
+}
+implementation {
+  norace bool m_pinHigh;
+
+  task void sendEvent();
+
+  command bool Get.get() { return call HplMsp430GeneralIO.get(); }
+
+  command error_t Notify.enable() {
+    error_t rv;
+
+    call HplMsp430GeneralIO.makeInput();
+    call HplMsp430GeneralIO.setResistor(MSP430_PORT_RESISTOR_PULLUP);
+    if ( call HplMsp430GeneralIO.get() ) {
+      m_pinHigh = TRUE;
+      return call GpioInterrupt.enableFallingEdge();
+    } else {
+      m_pinHigh = FALSE;
+      return call GpioInterrupt.enableRisingEdge();
+    }
   }
 
-} implementation {
-  enum {
-    CLIENT_ID = unique(MSP430_USCI_B0_RESOURCE),
-  };
+  command error_t Notify.disable() {
+    return call GpioInterrupt.disable();
+  }
 
-  components Msp430UsciB0P as UsciC;
-  Resource = UsciC.Resource[CLIENT_ID];
+  async event void GpioInterrupt.fired() {
+    call GpioInterrupt.disable();
 
-  components Msp430UsciSpiB0P as SpiC;
-  SpiPacket = SpiC.SpiPacket[CLIENT_ID];
-  SpiByte = SpiC.SpiByte;
-  Msp430UsciError = SpiC.Msp430UsciError;
+    m_pinHigh = !m_pinHigh;
 
-  UsciC.ResourceConfigure[CLIENT_ID] -> SpiC.ResourceConfigure[CLIENT_ID];
+    post sendEvent();
+  }
 
-   components HplMsp430GeneralIOC as GIO;
-
-   SpiC.SIMO -> GIO.UCB0SIMO;
-   SpiC.SOMI -> GIO.UCB0SOMI;
-   SpiC.CLK -> GIO.UCB0CLK;
+  task void sendEvent() {
+    bool pinHigh;
+    pinHigh = m_pinHigh;
+    signal Notify.notify( pinHigh );
+    if ( pinHigh )
+      call GpioInterrupt.enableFallingEdge();
+    else
+      call GpioInterrupt.enableRisingEdge();
+  }
 }

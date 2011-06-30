@@ -2,10 +2,17 @@
 #$Id$
 
 PLATFORM ?= red
+
+# Disable MSP430 hardware multiply because it makes MSPGCC die
+PFLAGS += -mdisable-hwmul
+#OPTFLAGS += -O
+
 MSP_MCU = cc430x5137
 IAR_MCU_GROUP = cc430x513x
 IAR_LINKER_XCL = lnkcc430F5137.xcl
 
+
+$(call TOSMake_include_platform,red)
 $(call TOSMake_include_platform,msp)
 
 red: $(BUILD_DEPS)

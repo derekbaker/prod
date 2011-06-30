@@ -1,5 +1,0 @@
-COMPONENT=TestAppC
-TOSMAKE_PATH += ..
-TOSMAKE_PATH += .
-include $(MAKERULES)
-

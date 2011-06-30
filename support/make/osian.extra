@@ -1,5 +1,7 @@
 # Add the paths required to build an OSIAN application
 PFLAGS += -DWITH_OSIAN
+# Must set this option for small devices cc430f5137 has limited RAM, PPP_MAXIMUN_MRU default is 1280
+PFLAGS += -DPPP_MAXIMUM_MRU=512
 
 # Non-TinyOS OSIAN material
 PFLAGS += -I$(TOSROOT)/support/sdk/c/osian/include
@@ -11,7 +13,8 @@ PFLAGS += -I$(TOSDIR)/interfaces/osian
 PFLAGS += -I$(TOSDIR)/system/osian
 
 # PPP support - need to use msp430-int ppp
-PFLAGS += -I$(TOSDIR)/lib/osian/ppp
+PFLAGS += -I$(TOSDIR)/lib/ppp
+PFLAGS += -I$(TOSDIR)/lib/fragpool
 
 # OSIAN network support
 PFLAGS += -I$(TOSDIR)/lib/net/oip
@@ -23,7 +26,6 @@ PFLAGS += -I$(TOSDIR)/lib/osian/leds
 PFLAGS += -I$(TOSDIR)/lib/osian/utils/crcx
 PFLAGS += -I$(TOSDIR)/lib/osian/utils/ewma
 PFLAGS += -I$(TOSDIR)/lib/osian/utils/average
-PFLAGS += -I$(TOSDIR)/lib/osian/utils/fragpool
 PFLAGS += -I$(TOSDIR)/lib/osian/timer
 PFLAGS += -I$(TOSDIR)/lib/osian/debug
 PFLAGS += -I$(TOSDIR)/lib/osian/lpm

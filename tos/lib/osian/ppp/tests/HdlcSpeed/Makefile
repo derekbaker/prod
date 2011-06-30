@@ -1,5 +1,0 @@
-COMPONENT=TestAppC
-TOSMAKE_PATH += ..
-PFLAGS += $(XPFLAGS)
-include $(MAKERULES)
-

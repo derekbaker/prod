@@ -49,7 +49,6 @@ for (split(/\n/, <<'EOText'
   %T/lib/util/keyvaluerecord
 
   %T/lib/serial
-  %T/lib/serialprintf
   %T/lib/printf
 
 EOText

@@ -41,7 +41,7 @@ module DeviceModifiedEui64P {
 } implementation {
 
   enum {
-    /** Bit 7 of the EUI64 is set to indicate a modified EUI64 as used
+    /** Byte 7 of the EUI64 is set to indicate a modified EUI64 as used
      * as an IPv6 interface identifier */
     MODIFIED_EUI64_MARKER = 0x02,
   };

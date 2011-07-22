@@ -116,7 +116,7 @@ implementation{
   
   //Read RAM/EEPROM location from MLX90614 device with address 'Address'
   //Returns 16bit register value
-  async command error_t MLX90614.read(uint8_t Address,uint8_t Reg,uint16_t* data) {
+  command error_t MLX90614.read(uint8_t Address,uint8_t Reg,uint16_t* data) {
     error_t error;
     uint8_t PEC;                                                     //Used to store the calculated PEC value
     unsigned char arr[6];
@@ -150,7 +150,7 @@ implementation{
 
   //Read RAM/EEPROM location from MLX90614 device with address 'Address'
   //Returns SUCCESS or FAIL
-  async command error_t MLX90614.write(uint8_t Address,uint8_t Reg,uint16_t data) {
+  command error_t MLX90614.write(uint8_t Address,uint8_t Reg,uint16_t data) {
     error_t error;
     unsigned char arr[6];
      
@@ -184,7 +184,7 @@ implementation{
   //    | | EE_DEAD - EEPROM double error has occurred, Active High
   //    | Not used
   //    EEBUSY - the previous write/erase EEPROM access is still in progress, Active High
-  async command error_t MLX90614.status(uint8_t Address,uint8_t *Status) {
+  command error_t MLX90614.status(uint8_t Address,uint8_t *Status) {
     uint16_t Result;
     error_t error;
    
@@ -198,7 +198,7 @@ implementation{
   }
  
   //Put the MLX90614 into sleep mode
-  async command error_t MLX90614.sleep(uint8_t Address) {
+  command error_t MLX90614.sleep(uint8_t Address) {
     return (call I2CPacket.write(I2C_START | I2C_STOP, Address, 1, (uint8_t*)MLX_Sleep));
   }
 

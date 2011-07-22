@@ -41,11 +41,11 @@ interface MLX90614{
   
   //Read RAM/EEPROM location from MLX90614 device with address 'Address' and places in data
   //Returns SUCCESS or FAIL
-  async command error_t read(uint8_t Address,uint8_t Reg,uint16_t *data);
+  command error_t read(uint8_t Address,uint8_t Reg,uint16_t *data);
 
   //Write to RAM/EEPROM of MLX90614 device with address 'Address' the value of data
   //Returns SUCCESS or FAIL
-  async command error_t write(uint8_t Address,uint8_t Reg,uint16_t data);  
+  command error_t write(uint8_t Address,uint8_t Reg,uint16_t data);  
   
   //Read the status FLAGS from MLX90614 device with address 'Address' and returns in Status 8bit value
   //Returns in Status
@@ -57,8 +57,8 @@ interface MLX90614{
   //    | Not used
   //    EEBUSY - the previous write/erase EEPROM access is still in progress, Active High
   //Returns SUCCESS or FAIL
-  async command error_t status(uint8_t Address, uint8_t *Status);
+  command error_t status(uint8_t Address, uint8_t *Status);
   
   //Put the MLX90614 into sleep mode
-  async command error_t sleep(uint8_t Address);
+  command error_t sleep(uint8_t Address);
 }

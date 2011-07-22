@@ -39,11 +39,11 @@ interface MC24XX1025{
   //read will access automatically up to 4 24XX1025
   //No device/memory boundary checking is done, reading over devices/boundary will not work
   //returns SUCCESS/FAIL
-  async command error_t read(uint32_t address, uint8_t *data, uint8_t len);
+  command error_t read(uint32_t address, uint8_t *data, uint8_t len);
   
   //write to Address 'address' data for len bytes
   //write will access automatically up to 4 24XX1025
   //No device/memory boundary checking is done, writing over devices/boundary will not work
   //returns SUCCESS/FAIL
-  async command error_t write(uint32_t address, uint8_t *data, uint8_t len);
+  command error_t write(uint32_t address, uint8_t *data, uint8_t len);
 }

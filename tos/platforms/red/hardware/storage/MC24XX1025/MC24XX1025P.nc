@@ -58,17 +58,25 @@ implementation{
   //blen - the number of bytes to read/write (up to boundary), max 128
   //EEAddr - two 8 bit bytes used to address the EEPROM
   void GetControls(uint32_t address,uint8_t len,uint8_t* Ctl,uint8_t* blen,uint8_t* EEAddr) {
-    uint8_t Control=0x50;                                                    //Control code 1010 + Block + Chip ID 
+    uint8_t Control=0x50;                                                    //Control code 1010 + Block + Chip ID
     union {
       uint32_t address;                                                      //1 x 32 bit byte
       uint8_t add[4];                                                        //4 x 8 bit bytes
     } Adr;                                                                   //Used to split the 32bit address
     Adr.address = address;                                                   //Copy the address sent to us into the union
 
-    if((0x0000FFFF-(address & 0x0000FFFF))+1>=128) {                         //set the number of bytes we can rewad/write up to boundary                         
-      *blen=len;                                                             //set blen to len, we have space for all bytes
+    if(address<0x00000080) {
+      if(0x00000080-address >= len) {
+       *blen=len;
+      } else {
+        *blen=0x00000080-address;
+      }
     } else {
-      *blen=(0x0000FFFF-(address & 0x0000FFFF))+1;                           //set blen to bytes available to next boundary
+      if((((address/0x00000080)+1)*0x00000080)-address >= len) {
+       *blen=len;
+      } else {
+        *blen=(((address/0x00000080)+1)*0x00000080)-address;
+      }
     }
                                                                              //chip zero bank 0 by default
     if((address & 0x00010000) == 0x10000) Control=Control+4;                 //chip zero bank 1             
@@ -87,7 +95,7 @@ implementation{
   //read
   //Reads from the EEPROM array len (128 bytes max) bytes and put the data into data
   //Returns SUCCESS/FAIL
-  async command error_t MC24XX1025.read(uint32_t address, uint8_t *data, uint8_t len) {
+  command error_t MC24XX1025.read(uint32_t address, uint8_t *data, uint8_t len) {
     error_t error;
     uint8_t Control;
     uint8_t ReadLen;
@@ -133,16 +141,17 @@ implementation{
   //write
   //Writes to the EEPROM array len (128 bytes max) bytes from data
   //Returns SUCCESS/FAIL  
-  async command error_t MC24XX1025.write(uint32_t address, uint8_t *data, uint8_t len) {
+  command error_t MC24XX1025.write(uint32_t address, uint8_t *data, uint8_t len) {
     error_t error;
     uint8_t Control;
+    uint32_t TimeOut=0;
     uint8_t WriteLen;
     uint8_t EEAddr[2];
     uint8_t Msg[131];
 
     if(len>128) return FAIL;
 
-    GetControls(address,len,&Control,&WriteLen,EEAddr);                    //                        
+    GetControls(address,len,&Control,&WriteLen,EEAddr);                        
     //printf("write GetControls address = %lx,len = %d,Control = %d,WriteLen = %d\n\r",address,len,Control,WriteLen);
 
     memcpy(&Msg[0],&EEAddr[0],2);
@@ -153,6 +162,15 @@ implementation{
       printf("MC24XX1025.write - I2CPacket.write(1) FAIL\n\r");
       return FAIL;
     }
+
+    //Device ack polling, wait for EEPROM to write to EEPROM array from EEPROM Ram
+    TimeOut=0;
+    do {
+      error = call I2CPacket.read(I2C_START | I2C_STOP, Control, WriteLen+2, Msg);//This leaves the bus not busy
+      //error = call I2CPacket.write(I2C_START,Control,0,0);                 //This is the correct test, but leaves the bus busy for other devices
+      if(TimeOut>1000) return FAIL;
+      TimeOut++;
+    } while(error==FAIL);
 
     if((len-WriteLen)>0) {                                                   //if we have anymore data
       address=address+WriteLen;                                              //set the address to the address plus the bytes we have already written
@@ -165,9 +183,17 @@ implementation{
       memcpy(&Msg[2],data,WriteLen);
       error = call I2CPacket.write(I2C_START | I2C_STOP, Control, WriteLen+2, Msg);      //write the remaining bytes
       if(error==FAIL) {
-        printf("MX24XX1025.write - I2CPacket.write(3) FAIL\n\r");
+        printf("MX24XX1025.write - I2CPacket.write(2) FAIL\n\r");
         return FAIL;
       }
+      //Device ack polling, wait for EEPROM to write to EEPROM array from EEPROM Ram
+      TimeOut=0;
+      do {
+        error = call I2CPacket.read(I2C_START | I2C_STOP, Control, WriteLen+2, Msg);//This leaves the bus not busy
+        //error = call I2CPacket.write(I2C_START,Control,0,0);               //This is the correct test, but leaves the bus busy for other devices
+        if(TimeOut>1000) return FAIL;
+        TimeOut++;
+      } while(error==FAIL);
     }
 
     return SUCCESS;

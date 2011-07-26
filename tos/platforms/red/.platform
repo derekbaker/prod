@@ -16,6 +16,7 @@ for (split(/\n/, <<'EOText'
   %P/Ieee/Identity
   %P/compatibility/system
 
+  %T/interfaces/platform
   %T/chips/msp430/x5xxx
   %T/chips/msp430/x5xxx/lpm
   %T/chips/msp430/x5xxx/timer

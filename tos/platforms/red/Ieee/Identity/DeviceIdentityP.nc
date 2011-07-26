@@ -62,6 +62,9 @@ module DeviceIdentityP {
 #ifndef OSIAN_DEVICE_TYPE
 #define OSIAN_DEVICE_TYPE 1
 #endif /* OSIAN_DEVICE_TYPE */
+#ifndef OSIAN_DEVICE_ID
+#define OSIAN_DEVICE_ID 0x414243
+#endif /*OSIAN_DEVICE_ID*/
 
   /** OSIAN Device Identifier, basically an EUI-64 with extra info.
    *
@@ -78,34 +81,38 @@ module DeviceIdentityP {
       return SUCCESS;
     }
     done = TRUE;
+    //the following forms the address 'B0C8:AD00:0141:4243' -> ultimatly turns into local-link address 'FE80::B2C8:AD00:0141:4243'
+    //Byte 7 changes from B0 to B2 because lib/net/oip/DeviceModifiedUui64P changes it to mark as a IPv6 interface identifier.
     odi.oui = OSIAN_DEVICE_OUI;
     odi.reserved = 0;
     odi.sensor = OSIAN_DEVICE_SENSOR;
     odi.actuator = OSIAN_DEVICE_ACTUATOR;
     odi.deviceClass = OSIAN_DEVICE_CLASS;
     odi.deviceType = OSIAN_DEVICE_TYPE;
+    odi.id = OSIAN_DEVICE_ID;
     {
-
+      //The following checks the EEPROM and used the Global address's last 3 bytes to form the odi.id
+      //The last two bytes are used to form the IEEE154 Pan addr, these two bytes must be the same in the local-link and global address
+      //else the packet is dropped by the IEEE154 layer.
       uint32_t id = 0;
-      uint8_t EE_senddata[5],EE_recdata[5];
-
-      #ifdef OSIAN_DEVICE_ID
-        odi.id = OSIAN_DEVICE_ID;
-	return rc;
-      #endif
+      uint8_t EE_senddata[5],EE_recdata[16];
 
       call StdControl.start();
 
-      EE_senddata[0]=0x00;			//high byte address
-      EE_senddata[1]=0x40;			//low byte address
+      EE_senddata[0]=0x30;	                                                //high byte address of the EEPROM init flag
+      EE_senddata[1]=0x01;                                                      //low byte address
+      rc = call I2CPacket.write(I2C_START, 0x0050, 2, EE_senddata);		//set the eeprom internal addr to 0x0130
+      rc = call I2CPacket.read(I2C_START | I2C_STOP, 0x0050,1, EE_recdata);     //load the EEPROM init flag
+      if(rc==FAIL || EE_recdata[0]!=0x08) return rc;                            //If the load failed or the EEPROM is not init return and except the defaults
 
-      rc = call I2CPacket.write(I2C_START, 0x0050, 2, EE_senddata);		//set the eeprom internal addr to 0x0050
-      rc = call I2CPacket.read(I2C_START | I2C_STOP, 0x0050,3, EE_recdata); 	//read 7 bytes from current eeprom addr
-
-      if (SUCCESS == rc) {
-        id = (id << 8) | EE_recdata[0];
-        id = (id << 8) | EE_recdata[1];
-        id = (id << 8) | EE_recdata[2];
+      EE_senddata[0]=0x00;	                                                //high byte address of the EEPROM GlobalAddress
+      EE_senddata[1]=0x00;                                                      //low byte of address
+      rc = call I2CPacket.write(I2C_START, 0x0050, 2, EE_senddata);		//set the eeprom internal addr to 0x0000
+      rc = call I2CPacket.read(I2C_START | I2C_STOP, 0x0050,16, EE_recdata); 	//read the GlobalAddress
+      if (SUCCESS == rc) {                                                      //Use the GlobalAddress's last 3 bytes to for the unique id
+        id = (id << 8) | EE_recdata[13];
+        id = (id << 8) | EE_recdata[14];
+        id = (id << 8) | EE_recdata[15];
       }
       odi.id = id;
     }

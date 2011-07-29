@@ -11,7 +11,9 @@ for (split(/\n/, <<'EOText'
   %P/hardware/radio
   %P/hardware/clock
   %P/hardware/rtc
+  %P/hardware/adc
   %P/hardware/sensors/MLX90614
+  %P/hardware/sensors/BatteryVoltage
   %P/hardware/storage/MC24XX1025
   %P/Ieee/Identity
   %P/compatibility/system
@@ -21,12 +23,12 @@ for (split(/\n/, <<'EOText'
   %T/chips/msp430/x5xxx/lpm
   %T/chips/msp430/x5xxx/timer
   %T/chips/msp430/x5xxx/usci
+  %T/chips/msp430/x5xxx/adc12
 
   %T/chips/msp430
   %T/chips/msp430/pins
   %T/chips/msp430/timer
   %T/chips/msp430/pmm
-  %T/chips/msp430/adc12
   %T/chips/msp430/sensors
   %T/chips/msp430/wdt
   %T/chips/msp430/rtc

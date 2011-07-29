@@ -99,9 +99,9 @@ module DeviceIdentityP {
 
       call StdControl.start();
 
-      EE_senddata[0]=0x31;	                                                //high byte address of the EEPROM init flag
-      EE_senddata[1]=0x01;                                                      //low byte address
-      rc = call I2CPacket.write(I2C_START, 0x0050, 2, EE_senddata);		//set the eeprom internal addr to 0x0131
+      EE_senddata[0]=0x00;	                                                //high byte address of the EEPROM init flag
+      EE_senddata[1]=0x80;                                                      //low byte address
+      rc = call I2CPacket.write(I2C_START, 0x0050, 2, EE_senddata);		//set the eeprom internal addr to 0x080 (128decimal)
       rc = call I2CPacket.read(I2C_START | I2C_STOP, 0x0050,1, EE_recdata);     //load the EEPROM init flag
       if(rc==FAIL || EE_recdata[0]!=0x08) return rc;                            //If the load failed or the EEPROM is not init return and except the defaults
 

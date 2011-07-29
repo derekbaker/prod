@@ -9,6 +9,11 @@ enum {
   TOS_SLEEP_NONE = MSP430_POWER_ACTIVE,
 };
 
+/* Use the PlatformAdcC component, and enable 6 pins */
+#define ADC12_USE_PLATFORM_ADC 1
+#define ADC12_PIN_AUTO_CONFIGURE 1
+#define ADC12_PINS_AVAILABLE 6
+
 /*
  * The cc430f5137 includes the RF1A.   When the radio is being used
  * the PMM VCORE setting must be at or abore 2.

@@ -49,6 +49,8 @@ configuration PlatformC {
 }
 implementation {
 
+  components PlatformAdcC;
+
   components PlatformP;
   PlatformInit = PlatformP;
   PeripheralInit = PlatformP.PeripheralInit;

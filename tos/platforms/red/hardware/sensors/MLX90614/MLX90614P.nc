@@ -123,13 +123,13 @@ implementation{
  
     error = call I2CPacket.write(I2C_START, Address, 1, &Reg);
     if(error==FAIL) {
-      printf("I2CPacket.write Failed\n\r");                          
+      //printf("I2CPacket.write Failed\n\r");                          
       return FAIL;                                                 
     }
 	
     error = call I2CPacket.read(I2C_START | I2C_STOP, Address,3, RetVal.data);
     if(error==FAIL) {
-      printf("I2CPacket.read Failed\n\r");                           
+      //printf("I2CPacket.read Failed\n\r");                           
       return FAIL;                                                 
     }
     
@@ -190,7 +190,7 @@ implementation{
    
     error = call MLX90614.read(Address,MLX_Status,&Result);           //Get the status of the MLX
     if(error==FAIL) {
-      printf("MLX90614.read Status FAIL\n\r");
+      //printf("MLX90614.read Status FAIL\n\r");
       return FAIL;
     }
     *Status=((uint8_t)Result & 0x00ff);                               //we only want the LSB 8 bits

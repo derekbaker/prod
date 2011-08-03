@@ -23,7 +23,6 @@ for (split(/\n/, <<'EOText'
   %T/chips/msp430/x5xxx/lpm
   %T/chips/msp430/x5xxx/timer
   %T/chips/msp430/x5xxx/usci
-  %T/chips/msp430/x5xxx/adc12
 
   %T/chips/msp430
   %T/chips/msp430/pins
@@ -32,6 +31,7 @@ for (split(/\n/, <<'EOText'
   %T/chips/msp430/sensors
   %T/chips/msp430/wdt
   %T/chips/msp430/rtc
+  %T/chips/msp430/adc12
   %T/chips/msp430/flash/settings
   %T/chips/msp430/flash/driver
   %T/chips/msp430/flash/constants

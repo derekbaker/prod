@@ -106,14 +106,14 @@ implementation{
     GetControls(address,len,&Control,&ReadLen,EEAddr);                       //                        
     error = call I2CPacket.write(I2C_START, Control, 2, EEAddr);             //Set the address on the correct device
     if(error==FAIL) {
-      printf("MC24XX1025.read - I2CPacket.write(0) FAIL\n\r");
+      //printf("MC24XX1025.read - I2CPacket.write(0) FAIL\n\r");
       return FAIL;
     }
     //printf("GetControls address = %lx,len = %d,Control = %d,ReadLen = %d\n\r",address,len,Control,ReadLen);
 
     error = call I2CPacket.read(I2C_START | I2C_STOP, Control, ReadLen, data);//read the data upto the boundary (phyical or block)
     if(error==FAIL) {
-      printf("MC24XX1025.read - I2CPacket.read(1) FAIL\n\r");
+      //printf("MC24XX1025.read - I2CPacket.read(1) FAIL\n\r");
       return FAIL;
     }
 
@@ -124,14 +124,14 @@ implementation{
       GetControls(address,len,&Control,&ReadLen,EEAddr);                     //                        
       error = call I2CPacket.write(I2C_START, Control, 2, EEAddr);           //Set the address on the correct device
       if(error==FAIL) {
-        printf("MC24XX1025.read - I2CPacket.write(2) FAIL\n\r");
+        //printf("MC24XX1025.read - I2CPacket.write(2) FAIL\n\r");
         return FAIL;
       }
       //printf("GetControls address = %lx,len = %d,Control = %d,ReadLen = %d\n\r",address,len,Control,ReadLen);
 
       error = call I2CPacket.read(I2C_START | I2C_STOP, Control, ReadLen, data);//Read the remaining bytes
       if(error==FAIL) {
-        printf("MC24XX1025.read - I2CPacket.read(3) FAIL\n\r");
+        //printf("MC24XX1025.read - I2CPacket.read(3) FAIL\n\r");
         return FAIL;
       }
     }
@@ -159,7 +159,7 @@ implementation{
 
     error = call I2CPacket.write(I2C_START | I2C_STOP, Control, WriteLen+2, Msg);        //write the data upto the boundary (phyical or block)
     if(error==FAIL) {
-      printf("MC24XX1025.write - I2CPacket.write(1) FAIL\n\r");
+      //printf("MC24XX1025.write - I2CPacket.write(1) FAIL\n\r");
       return FAIL;
     }
 
@@ -183,7 +183,7 @@ implementation{
       memcpy(&Msg[2],data,WriteLen);
       error = call I2CPacket.write(I2C_START | I2C_STOP, Control, WriteLen+2, Msg);      //write the remaining bytes
       if(error==FAIL) {
-        printf("MX24XX1025.write - I2CPacket.write(2) FAIL\n\r");
+        //printf("MX24XX1025.write - I2CPacket.write(2) FAIL\n\r");
         return FAIL;
       }
       //Device ack polling, wait for EEPROM to write to EEPROM array from EEPROM Ram
